@@ -12,7 +12,7 @@ sensor_msgs::LaserScan scan_in;
 void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan){
   scan_in= *scan;
   Message = true;
-  ROS_INFO("msg");
+  //ROS_INFO("msg");
 
    // Do something with cloud.
 }
@@ -36,11 +36,7 @@ int main(int argc, char** argv){
   while (node.ok()){
     if(Message){
       Message = false;
-      ROS_INFO("header time %d.%d ",scan_in.header.stamp.sec,scan_in.header.stamp.nsec);
-      ROS_INFO("goal time %d.%d ",(scan_in.header.stamp + ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment)).sec,
-        (scan_in.header.stamp + ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment)).nsec);
-
-        if(!listener_.waitForTransform(
+      if(!listener_.waitForTransform(
          scan_in.header.frame_id,
          "/world",
          scan_in.header.stamp + ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),
