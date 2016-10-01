@@ -4,9 +4,10 @@ project(goat_lidar_merging)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS 
-  PCL REQUIRED
+find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
+  pcl_conversions
+  pcl_ros
   roscpp
   rospy
   std_msgs
@@ -106,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES goat_lidar_merging
-#  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs
+#  CATKIN_DEPENDS geometry_msgs pcl_conversions pcl_ros roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
 
@@ -118,12 +119,9 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  ${PCL_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS} /usr/include/pcl-1.7/
+  ${catkin_INCLUDE_DIRS}
 )
 
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
 ## Declare a C++ library
 # add_library(goat_lidar_merging
 #   src/${PROJECT_NAME}/goat_lidar_merging.cpp
@@ -135,17 +133,16 @@ add_definitions(${PCL_DEFINITIONS})
 # add_dependencies(goat_lidar_merging ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
- add_executable(merger src/merger.cpp)
+# add_executable(goat_lidar_merging_node src/goat_lidar_merging_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(goat_lidar_merging_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-#Specify libraries to link a library or executable target against
-target_link_libraries(merger
-   ${catkin_LIBRARIES}
-   ${PCL_LIBRARIES}
- )
+## Specify libraries to link a library or executable target against
+# target_link_libraries(goat_lidar_merging_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -181,7 +178,8 @@ target_link_libraries(merger
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
-
+add_executable(merger src/merger.cpp)
+target_link_libraries(merger ${catkin_LIBRARIES})
 #############
 ## Testing ##
 #############
