@@ -105,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES goat_lidar_merging
 #  CATKIN_DEPENDS geometry_msgs pcl_conversions pcl_ros roscpp rospy std_msgs
 #  DEPENDS system_lib
@@ -118,7 +118,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(
+include_directories(include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -178,7 +178,9 @@ include_directories(
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
-add_executable(merger src/merger.cpp)
+add_executable(merger 
+	src/merger.cpp
+	src/clusterDetection.cpp)
 target_link_libraries(merger ${catkin_LIBRARIES})
 #############
 ## Testing ##
