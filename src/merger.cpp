@@ -1,3 +1,5 @@
+#pragma GCC diagnostic ignored "-Wignored-attributes"
+
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_listener.h>

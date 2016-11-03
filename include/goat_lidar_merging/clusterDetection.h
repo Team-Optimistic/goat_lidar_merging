@@ -17,7 +17,6 @@
 #include <pcl/segmentation/conditional_euclidean_clustering.h>
 #include <pcl/common/geometry.h>
 
-
 class clusterDetection
 {
   public:
@@ -28,8 +27,8 @@ class clusterDetection
     static pcl::PointCloud<pcl::PointXYZ> objects; //temp clouds
     static double squaredDistance;
 
-    
-  private:
+
+private:
 	pcl::ConditionalEuclideanClustering<pcl::PointXYZ> * cec;
   pcl::PointCloud<pcl::PointXYZ> nonClumpedPoints;
 

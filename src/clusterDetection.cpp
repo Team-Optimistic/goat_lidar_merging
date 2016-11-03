@@ -11,9 +11,15 @@ clusterDetection::clusterDetection(unsigned int minPoints,unsigned int radiusMM)
 	cec->setClusterTolerance (radiusMM);
 	cec->setMinClusterSize (minPoints);
 }
+
+constexpr float computeSquared(const pcl::PointXYZ& p1, const pcl::PointXYZ& p2)
+{
+	return (p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y);
+}
+
 bool clusterDetection::alreadyKnown(const pcl::PointXYZ &point){
 	for(unsigned i=0; i <objects.size();i++){
-		if(((objects.at(i).x-point.x)*(objects.at(i).x-point.x) + (objects.at(i).y-point.y)*(objects.at(i).y-point.y))<squaredDistance)
+		if(computeSquared(point, objects.at(i)) < squaredDistance)
 			return true;
 	}
 	return false;

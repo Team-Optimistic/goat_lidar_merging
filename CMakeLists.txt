@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(goat_lidar_merging)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -178,7 +180,7 @@ include_directories(include
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
-add_executable(merger 
+add_executable(merger
 	src/merger.cpp
 	src/clusterDetection.cpp)
 target_link_libraries(merger ${catkin_LIBRARIES})
