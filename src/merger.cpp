@@ -20,10 +20,9 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan){
 
 
 int main(int argc, char** argv){
-  ROS_INFO("test");
   ros::init(argc, argv, "merger");
   clusterDetection detector(5,10);
-  
+
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("/scan", 10, scanCallback);
   ros::Publisher cloud_pub = node.advertise<sensor_msgs::PointCloud2>("cloud", 10);
@@ -36,7 +35,7 @@ int main(int argc, char** argv){
   while (node.ok()){
     if(Message){
       Message = false;
-      if(!listener_.waitForTransform(scan_in.header.frame_id,"/world", scan_in.header.stamp 
+      if(!listener_.waitForTransform(scan_in.header.frame_id,"/world", scan_in.header.stamp
         + ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0))){
           ROS_INFO("Gave up");
 
@@ -44,7 +43,7 @@ int main(int argc, char** argv){
       }
       sensor_msgs::PointCloud cloud;
       sensor_msgs::PointCloud2 cloud2;
-      
+
       projector_.transformLaserScanToPointCloud("/world",scan_in,
         cloud,listener_);
       sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
