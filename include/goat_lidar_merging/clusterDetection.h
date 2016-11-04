@@ -14,7 +14,9 @@
 
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/features/normal_3d.h>
-#include <pcl/segmentation/conditional_euclidean_clustering.h>
+#include <pcl/kdtree/kdtree.h>
+
+#include <pcl/segmentation/extract_clusters.h>
 #include <pcl/common/geometry.h>
 
 class clusterDetection
@@ -29,8 +31,10 @@ class clusterDetection
 
 
 private:
-	pcl::ConditionalEuclideanClustering<pcl::PointXYZ> * cec;
-  pcl::PointCloud<pcl::PointXYZ> nonClumpedPoints;
+  pcl::EuclideanClusterExtraction<pcl::PointXYZ> extractor;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr nonClumpedPoints;
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree;
+
 
 };
 

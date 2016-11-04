@@ -4,12 +4,12 @@ pcl::PointCloud<pcl::PointXYZ> clusterDetection::objects;
 
 
 clusterDetection::clusterDetection(unsigned int minPoints,unsigned int radiusMM){
-	cec = new pcl::ConditionalEuclideanClustering<pcl::PointXYZ> (true);
+	tree.reset(new pcl::search::KdTree<pcl::PointXYZ>);
+
 
 	squaredDistance = (4.0*radiusMM * radiusMM)*1e-6;
-  	//cec->setConditionFunction (&customRegionGrowing);
-	cec->setClusterTolerance (radiusMM);
-	cec->setMinClusterSize (minPoints);
+	extractor->setClusterTolerance (radiusMM);
+	extractor->setMinClusterSize (minPoints);
 }
 
 constexpr float computeSquared(const pcl::PointXYZ& p1, const pcl::PointXYZ& p2)
@@ -24,18 +24,25 @@ bool clusterDetection::alreadyKnown(const pcl::PointXYZ &point){
 	}
 	return false;
 }
+//remove points of objects already detectedct
 void clusterDetection::removeRedundantPoints(pcl::PointCloud<pcl::PointXYZ> &cloud){
 	std::remove_if(cloud.begin(),cloud.end(),clusterDetection::alreadyKnown);
-	}
+}
 
 
-	void clusterDetection::cluster(sensor_msgs::PointCloud2 &cloud2){
+void clusterDetection::cluster(sensor_msgs::PointCloud2 &cloud2){
+	std::vector<pcl::PointIndices> cluster_indices;
+
+
     pcl::PointCloud<pcl::PointXYZ> newScan; //temp clouds
     fromROSMsg(cloud2,newScan);
-    nonClumpedPoints+=newScan;
+    removeRedundantPoints(newScan);
+    *nonClumpedPoints+=newScan;//new scna now only contains points that add new knowledge
 
-	//cec->setInputCloud (nonClumpedPoints);
+    tree->setInputCloud(nonClumpedPoints);
 
-	//cec->segment (*clusters);
-  	//cec->getRemovedClusters (small_clusters, large_clusters);
+    extractor->setSearchMethod (tree);
+	extractor->setInputCloud (nonClumpedPoints);
+	extractor->extract (cluster_indices);
+  	//extractor->getRemovedClusters (small_clusters, large_clusters);
 }
