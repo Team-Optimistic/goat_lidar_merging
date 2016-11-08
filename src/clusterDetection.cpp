@@ -8,8 +8,8 @@ clusterDetection::clusterDetection(unsigned int minPoints,unsigned int radiusMM)
 
 
 	squaredDistance = (4.0*radiusMM * radiusMM)*1e-6;
-	extractor->setClusterTolerance (radiusMM);
-	extractor->setMinClusterSize (minPoints);
+	extractor.setClusterTolerance (radiusMM);
+	extractor.setMinClusterSize (minPoints);
 }
 
 constexpr float computeSquared(const pcl::PointXYZ& p1, const pcl::PointXYZ& p2)
@@ -41,8 +41,8 @@ void clusterDetection::cluster(sensor_msgs::PointCloud2 &cloud2){
 
     tree->setInputCloud(nonClumpedPoints);
 
-    extractor->setSearchMethod (tree);
-	extractor->setInputCloud (nonClumpedPoints);
-	extractor->extract (cluster_indices);
+    extractor.setSearchMethod (tree);
+	extractor.setInputCloud (nonClumpedPoints);
+	extractor.extract (cluster_indices);
   	//extractor->getRemovedClusters (small_clusters, large_clusters);
 }
