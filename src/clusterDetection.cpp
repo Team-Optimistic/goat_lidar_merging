@@ -30,19 +30,27 @@ void clusterDetection::removeRedundantPoints(pcl::PointCloud<pcl::PointXYZ> &clo
 }
 
 
-void clusterDetection::cluster(sensor_msgs::PointCloud2 &cloud2){
+const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::PointCloud2 &cloud2){
 	std::vector<pcl::PointIndices> cluster_indices;
 
 
     pcl::PointCloud<pcl::PointXYZ> newScan; //temp clouds
     fromROSMsg(cloud2,newScan);
-    removeRedundantPoints(newScan);
+    clusterDetection::removeRedundantPoints(newScan);
     *nonClumpedPoints+=newScan;//new scna now only contains points that add new knowledge
 
     tree->setInputCloud(nonClumpedPoints);
 
-    extractor.setSearchMethod (tree);
-	extractor.setInputCloud (nonClumpedPoints);
-	extractor.extract (cluster_indices);
-  	//extractor->getRemovedClusters (small_clusters, large_clusters);
+    extractor.setSearchMethod(tree);
+	extractor.setInputCloud(nonClumpedPoints);
+	extractor.extract(cluster_indices);
+
+	int j = 0;
+  	for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
+  	{   
+    	objects.points.push_back(nonClumpedPoints->points[*it->indices.begin()]);
+    }
+    sensor_msgs::PointCloud2 rosObjectList;
+    toROSMsg(objects,rosObjectList);
+    return rosObjectList;
 }

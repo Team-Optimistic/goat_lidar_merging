@@ -23,7 +23,7 @@ class clusterDetection
 {
   public:
     clusterDetection(unsigned int minPoints,unsigned int radiusMM);
-    void cluster(sensor_msgs::PointCloud2 &cloud2);
+    const sensor_msgs::PointCloud2 cluster(const sensor_msgs::PointCloud2 &cloud2);
     static bool alreadyKnown(const pcl::PointXYZ &point);
     void removeRedundantPoints(pcl::PointCloud<pcl::PointXYZ> &cloud);
     static pcl::PointCloud<pcl::PointXYZ> objects; //temp clouds

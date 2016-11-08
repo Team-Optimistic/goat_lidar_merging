@@ -50,7 +50,7 @@ int main(int argc, char** argv){
         cloud,listener_);
       sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
       cloud_pub.publish(cloud2);
-      detector.cluster(cloud2);
+      cloud_pub.publish(detector.cluster(cloud2));
 
 
 
