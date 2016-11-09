@@ -32,7 +32,7 @@ class clusterDetection
 
 private:
   pcl::EuclideanClusterExtraction<pcl::PointXYZ> extractor;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr nonClumpedPoints;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr nonClumpedPoints; 
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree;
 
 

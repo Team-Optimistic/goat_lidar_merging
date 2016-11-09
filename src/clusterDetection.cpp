@@ -3,7 +3,9 @@ double clusterDetection::squaredDistance;
 pcl::PointCloud<pcl::PointXYZ> clusterDetection::objects;
 
 
-clusterDetection::clusterDetection(unsigned int minPoints,unsigned int radiusMM){
+clusterDetection::clusterDetection(unsigned int minPoints,unsigned int radiusMM):
+nonClumpedPoints(new pcl::PointCloud<pcl::PointXYZ>)
+{
 	tree.reset(new pcl::search::KdTree<pcl::PointXYZ>);
 
 
@@ -36,8 +38,10 @@ const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::Poin
 
     pcl::PointCloud<pcl::PointXYZ> newScan; //temp clouds
     fromROSMsg(cloud2,newScan);
+    
     clusterDetection::removeRedundantPoints(newScan);
-    *nonClumpedPoints+=newScan;//new scna now only contains points that add new knowledge
+    
+    (*nonClumpedPoints)+=newScan;//new scna now only contains points that add new knowledge
 
     tree->setInputCloud(nonClumpedPoints);
 

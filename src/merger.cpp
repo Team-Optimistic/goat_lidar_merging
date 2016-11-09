@@ -28,6 +28,8 @@ int main(int argc, char** argv){
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("/scan", 10, scanCallback);
   ros::Publisher cloud_pub = node.advertise<sensor_msgs::PointCloud2>("cloud", 10);
+  ros::Publisher object_pub = node.advertise<sensor_msgs::PointCloud2>("objects", 10);
+
   tf::TransformListener listener_;
   laser_geometry::LaserProjection projector_;
 
@@ -45,12 +47,15 @@ int main(int argc, char** argv){
       }
       sensor_msgs::PointCloud cloud;
       sensor_msgs::PointCloud2 cloud2;
+      sensor_msgs::PointCloud2 objectsCloud;
 
       projector_.transformLaserScanToPointCloud("/world",scan_in,
         cloud,listener_);
       sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
       cloud_pub.publish(cloud2);
-      cloud_pub.publish(detector.cluster(cloud2));
+      objectsCloud = detector.cluster(cloud2);
+      objectsCloud.header = cloud2.header;
+      object_pub.publish(objectsCloud);
 
 
 
