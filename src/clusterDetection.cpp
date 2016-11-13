@@ -10,7 +10,8 @@ nonClumpedPoints(new pcl::PointCloud<pcl::PointXYZ>)
 
 
 	squaredDistance = (4.0*radiusMM * radiusMM)*1e-6;
-	extractor.setClusterTolerance (radiusMM);
+	std::cout << squaredDistance << std::endl;
+	extractor.setClusterTolerance (radiusMM * 0.001);
 	extractor.setMinClusterSize (minPoints);
 }
 
@@ -28,32 +29,43 @@ bool clusterDetection::alreadyKnown(const pcl::PointXYZ &point){
 }
 //remove points of objects already detectedct
 void clusterDetection::removeRedundantPoints(pcl::PointCloud<pcl::PointXYZ> &cloud){
-	std::remove_if(cloud.begin(),cloud.end(),clusterDetection::alreadyKnown);
+	cloud.erase(std::remove_if(cloud.begin(),cloud.end(),clusterDetection::alreadyKnown),cloud.end());
 }
 
 
 const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::PointCloud2 &cloud2){
 	std::vector<pcl::PointIndices> cluster_indices;
-
+	pcl::PointIndices points_in_clusters;
 
     pcl::PointCloud<pcl::PointXYZ> newScan; //temp clouds
     fromROSMsg(cloud2,newScan);
-    
+    int oldPoints = newScan.size();
     clusterDetection::removeRedundantPoints(newScan);
-    
+    std::cout << "removed  " << oldPoints - newScan.size()  <<std::endl;
     (*nonClumpedPoints)+=newScan;//new scna now only contains points that add new knowledge
+    std::cout <<"total points in objects " << points_in_clusters.indices.size() <<std::endl;
 
     tree->setInputCloud(nonClumpedPoints);
 
     extractor.setSearchMethod(tree);
-	extractor.setInputCloud(nonClumpedPoints);
-	extractor.extract(cluster_indices);
+    extractor.setInputCloud(nonClumpedPoints);
+    extractor.extract(cluster_indices);
 
-	int j = 0;
-  	for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
-  	{   
+    int j = 0;
+	//std::cout << "objects detected this loop  " << cluster_indices.size() << std::endl;
+	//std::cout << "points in this loop  " << nonClumpedPoints->size() << std::endl;
+
+    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
+    {   
     	objects.points.push_back(nonClumpedPoints->points[*it->indices.begin()]);
+    	points_in_clusters.indices.insert(points_in_clusters.indices.begin(),*it->indices.begin(),*it->indices.end());
+    	//std::cout <<"object found at  "<< nonClumpedPoints->points[*it->indices.begin()].x << "  " << nonClumpedPoints->points[*it->indices.begin()].y <<"  "<<std::endl;
+    	//std::cout <<"this cluster contains " << it->indices.size() <<std::endl;
     }
+    std::cout <<"total points in objects " << points_in_clusters.indices.size() <<std::endl;
+    std::cout <<"total points " << nonClumpedPoints->size() <<std::endl;
+
+   // std::cout << "object list size  " << objects.size() << std::endl;
     sensor_msgs::PointCloud2 rosObjectList;
     toROSMsg(objects,rosObjectList);
     return rosObjectList;
