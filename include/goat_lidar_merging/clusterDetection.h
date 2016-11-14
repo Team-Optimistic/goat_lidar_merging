@@ -18,6 +18,9 @@
 
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/common/geometry.h>
+#include <pcl/filters/extract_indices.h>
+
+
 
 class clusterDetection
 {
