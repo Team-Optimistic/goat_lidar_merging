@@ -20,18 +20,23 @@ constexpr float computeSquared(const pcl::PointXYZ& p1, const pcl::PointXYZ& p2)
 	return (p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y);
 }
 
-bool clusterDetection::alreadyKnown(const pcl::PointXYZ &point){
+bool clusterDetection::isUnwanted(const pcl::PointXYZ &point){
+    const float field_margin = 0.1;
+    const float field_length = 3.6576;
 	for(unsigned i=0; i <objects.size();i++){
 		if(computeSquared(point, objects.at(i)) < squaredDistance)
 			return true;
 	}
+    if(point.x < 0 + field_margin || point.y < 0 + field_margin)
+        return true;
+    if(point.x > field_length - field_margin || point.y >  field_length/2 - field_margin)
+        return true;
 	return false;
 }
 //remove points of objects already detectedct
-void clusterDetection::removeRedundantPoints(pcl::PointCloud<pcl::PointXYZ> &cloud){
-	cloud.erase(std::remove_if(cloud.begin(),cloud.end(),clusterDetection::alreadyKnown),cloud.end());
+void clusterDetection::removeUnwantedPoints(pcl::PointCloud<pcl::PointXYZ> &cloud){
+	cloud.erase(std::remove_if(cloud.begin(),cloud.end(),clusterDetection::isUnwanted),cloud.end());
 }
-
 
 const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::PointCloud2 &cloud2){
 	std::vector<pcl::PointIndices> cluster_indices;
@@ -41,7 +46,7 @@ const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::Poin
     pcl::PointCloud<pcl::PointXYZ> newScan; //temp clouds
     fromROSMsg(cloud2,newScan);
     int oldPoints = newScan.size();
-    clusterDetection::removeRedundantPoints(newScan);
+    clusterDetection::removeUnwantedPoints(newScan);
     std::cout << "removed  " << oldPoints - newScan.size()  <<std::endl;
     (*nonClumpedPoints)+=newScan;//new scna now only contains points that add new knowledge
     std::cout <<"total points in objects " << points_in_clusters->indices.size() <<std::endl;
