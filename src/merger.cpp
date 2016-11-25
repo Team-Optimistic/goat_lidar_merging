@@ -41,8 +41,9 @@ int main(int argc, char** argv){
   while (node.ok()){
     if(Message){
       Message = false;
-      if(!listener_.waitForTransform(scan_in.header.frame_id,"/world", scan_in.header.stamp
-        + ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0))){
+      try{
+        if(!listener_.waitForTransform(scan_in.header.frame_id,"/world", scan_in.header.stamp
+          + ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0))){
           ROS_INFO("Gave up");
 
         continue;
@@ -59,14 +60,17 @@ int main(int argc, char** argv){
       objectsCloud = detector.cluster(cloud2);
       objectsCloud.header = cloud2.header;
       object_pub.publish(objectsCloud);
-
-
+    } catch(const tf2::ExtrapolationException& e){
+      ROS_INFO("Need to see the past");
+    } catch(const tf2::ConnectivityException& e){
+      ROS_INFO("Ryan can't publish fast enough");
 
     }
-    ros:: spinOnce();
-    rate.sleep();
-
-
   }
-  return 0;
+  ros:: spinOnce();
+  rate.sleep();
+
+
+}
+return 0;
 };

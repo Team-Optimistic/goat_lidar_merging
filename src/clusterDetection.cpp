@@ -47,9 +47,9 @@ const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::Poin
     fromROSMsg(cloud2,newScan);
     int oldPoints = newScan.size();
     clusterDetection::removeUnwantedPoints(newScan);
-    std::cout << "removed  " << oldPoints - newScan.size()  <<std::endl;
+   //std::cout << "removed  " << oldPoints - newScan.size()  <<std::endl;
     (*nonClumpedPoints)+=newScan;//new scna now only contains points that add new knowledge
-    std::cout <<"total points in objects " << points_in_clusters->indices.size() <<std::endl;
+    //std::cout <<"total points in objects " << points_in_clusters->indices.size() <<std::endl;
 
     tree->setInputCloud(nonClumpedPoints);
 
@@ -67,11 +67,8 @@ const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::Poin
     	
         points_in_clusters->indices.insert(points_in_clusters->indices.begin(),it->indices.begin(),it->indices.end());
     	//std::cout <<"object found at  "<< nonClumpedPoints->points[*it->indices.begin()].x << "  " << nonClumpedPoints->points[*it->indices.begin()].y <<"  "<<std::endl;
-    	std::cout <<"this cluster contains " << it->indices.size() <<std::endl;
+    	//std::cout <<"this cluster contains " << it->indices.size() <<std::endl;
     }
-    std::cout <<"total points in objects " << points_in_clusters->indices.size() <<std::endl;
-    std::cout <<"total points " << nonClumpedPoints->size() <<std::endl;
-
    // std::cout << "object list size  " << objects.size() << std::endl;
     sensor_msgs::PointCloud2 rosObjectList;
     toROSMsg(objects,rosObjectList);
