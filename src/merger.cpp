@@ -42,7 +42,7 @@ int main(int argc, char** argv){
     if(Message){
       Message = false;
       try{
-        if(!listener_.waitForTransform(scan_in.header.frame_id,"/world", scan_in.header.stamp
+        if(!listener_.waitForTransform(scan_in.header.frame_id,"/field", scan_in.header.stamp
           + ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0))){
           ROS_INFO("Gave up");
 
@@ -52,10 +52,10 @@ int main(int argc, char** argv){
       sensor_msgs::PointCloud2 cloud2;
       sensor_msgs::PointCloud2 objectsCloud;
 
-      projector_.transformLaserScanToPointCloud("/world",scan_in,
+      projector_.transformLaserScanToPointCloud("/field",scan_in,
         cloud,listener_);
       sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
-      cloud2.header.frame_id = "/world";
+      cloud2.header.frame_id = "/field";
       cloud_pub.publish(cloud2);
       objectsCloud = detector.cluster(cloud2);
       objectsCloud.header = cloud2.header;

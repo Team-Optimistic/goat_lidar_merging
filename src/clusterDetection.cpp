@@ -13,8 +13,8 @@ nonClumpedPoints(new pcl::PointCloud<pcl::PointXYZ>)
 
 	small_squared_Distance = (starSize * starSize)*1e-6;
     big_squared_Distance = (cubeSize * cubeSize) *1e-6;
-	extractor.setClusterTolerance (radiusMM * 1e-3);
-	extractor.setMinClusterSize (minPoints);
+    extractor.setClusterTolerance (radiusMM * 1e-3);
+    extractor.setMinClusterSize (minPoints);
 }
 
 constexpr float computeSquared(const pcl::PointXYZ& p1, const pcl::PointXYZ& p2)
@@ -30,19 +30,19 @@ bool clusterDetection::wasRemoved(const pcl::PointXYZ &point){
 bool clusterDetection::isUnwanted(const pcl::PointXYZ &point){
     const float field_margin = 0.1;
     const float field_length = 3.6576;
-	for(unsigned i=0; i <big_objects.size();i++){
-		if(computeSquared(point, big_objects.at(i)) < big_squared_Distance)
-			return true;
-	}
-    for(unsigned i=0; i <small_objects.size();i++){
-        if(computeSquared(point, small_objects.at(i)) < small_squared_Distance)
-            return true;
-    }
-    if(point.x < 0 + field_margin || point.y < 0 + field_margin)
+    for(unsigned i=0; i <big_objects.size();i++){
+      if(computeSquared(point, big_objects.at(i)) < big_squared_Distance)
+         return true;
+ }
+ for(unsigned i=0; i <small_objects.size();i++){
+    if(computeSquared(point, small_objects.at(i)) < small_squared_Distance)
         return true;
-    if(point.x > field_length - field_margin || point.y >  field_length/2 - field_margin)
-        return true;
-	return false;
+}
+if(point.x < 0 + field_margin || point.y < 0 + field_margin)
+    return true;
+if(point.x > field_length - field_margin || point.y >  field_length/2 - field_margin)
+    return true;
+return false;
 }
 //remove points of objects already detectedct
 void clusterDetection::removeUnwantedPoints(pcl::PointCloud<pcl::PointXYZ> &cloud){
@@ -66,17 +66,38 @@ const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::Poin
     extractor.setSearchMethod(tree);
     extractor.setInputCloud(nonClumpedPoints);
     extractor.extract(cluster_indices);
-	std::cout << "objects detected this loop  " << cluster_indices.size() << std::endl;
+    std::cout << "objects detected this loop  " << cluster_indices.size() << std::endl;
     eifilter.setInputCloud(nonClumpedPoints);
 
 
     for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
     {   
-    	big_objects.points.push_back(nonClumpedPoints->points[*it->indices.begin()]);
-    	
+        float x =0;
+        float y =0;
+        int points =0;
+        for(int i = 0; i<it->indices.size(); i++){
+            x += nonClumpedPoints->points[it->indices[i]].x;
+            y += nonClumpedPoints->points[it->indices[i]].y;
+            points++;
+        }
+        pcl::PointXYZ new_Object;
+        new_Object.x = x/points;
+        new_Object.y = y/points;
+        float biggestDistance =0.0;
+        for(int i = 0; i<it->indices.size(); i++){
+            float currentDist = computeSquared(nonClumpedPoints->points[it->indices[i]],new_Object);
+            if(currentDist>biggestDistance)
+                biggestDistance = currentDist; 
+        }
+        if(biggestDistance > small_squared_Distance){
+            new_Object.z = 2;
+            big_objects.points.push_back(new_Object);
+        }else{
+            new_Object.z = 1;
+            small_objects.points.push_back(new_Object);
+        }
         points_in_clusters->indices.insert(points_in_clusters->indices.begin(),it->indices.begin(),it->indices.end());
-    	//std::cout <<"object found at  "<< nonClumpedPoints->points[*it->indices.begin()].x << "  " << nonClumpedPoints->points[*it->indices.begin()].y <<"  "<<std::endl;
-    	//std::cout <<"this cluster contains " << it->indices.size() <<std::endl;
+
     }
     eifilter.setIndices(points_in_clusters);
     eifilter.setNegative (true);
@@ -88,8 +109,10 @@ const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::Poin
 
     std::cout << "points after  " << nonClumpedPoints->size() << std::endl;
 
+    pcl::PointCloud<pcl::PointXYZ> pclROSObjectLists = big_objects + small_objects; //temp clouds
+
 
     sensor_msgs::PointCloud2 rosObjectList;
-    toROSMsg(big_objects,rosObjectList);
+    toROSMsg(pclROSObjectLists,rosObjectList);
     return rosObjectList;
 }
