@@ -25,7 +25,7 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan){
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "merger");
-  clusterDetection detector(5,200);
+  clusterDetection detector(5,50,165,200);
 
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("/scan", 10, scanCallback);

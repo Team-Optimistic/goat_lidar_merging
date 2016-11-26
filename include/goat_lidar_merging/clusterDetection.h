@@ -25,12 +25,17 @@
 class clusterDetection
 {
   public:
-    clusterDetection(unsigned int minPoints,unsigned int radiusMM);
+    clusterDetection(unsigned int minPoints,unsigned int radiusMM, unsigned int starSize, unsigned int cubeSize);
     const sensor_msgs::PointCloud2 cluster(const sensor_msgs::PointCloud2 &cloud2);
     static bool isUnwanted(const pcl::PointXYZ &point);
+    static bool wasRemoved(const pcl::PointXYZ &point);
     void removeUnwantedPoints(pcl::PointCloud<pcl::PointXYZ> &cloud);
-    static pcl::PointCloud<pcl::PointXYZ> objects; //temp clouds
-    static double squaredDistance;
+    static pcl::PointCloud<pcl::PointXYZ> big_objects; //temp clouds
+    static pcl::PointCloud<pcl::PointXYZ> small_objects; //temp clouds
+
+    static double small_squared_Distance;
+    static double big_squared_Distance;
+
 
 
 private:
