@@ -48,8 +48,17 @@ return false;
 void clusterDetection::removeUnwantedPoints(pcl::PointCloud<pcl::PointXYZ> &cloud){
 	cloud.erase(std::remove_if(cloud.begin(),cloud.end(),clusterDetection::isUnwanted),cloud.end());
 }
-
-const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::PointCloud2 &cloud2){
+const sensor_msgs::PointCloud2 clusterDetection::get_big_objects(){
+    sensor_msgs::PointCloud2 rosObjectList;
+    toROSMsg(big_objects,rosObjectList);
+    return rosObjectList;
+}
+const sensor_msgs::PointCloud2 clusterDetection::get_small_objects(){
+    sensor_msgs::PointCloud2 rosObjectList;
+    toROSMsg(small_objects,rosObjectList);
+    return rosObjectList;
+}
+void clusterDetection::cluster(const sensor_msgs::PointCloud2 &cloud2){
 	std::vector<pcl::PointIndices> cluster_indices;
     pcl::PointIndices::Ptr points_in_clusters (new pcl::PointIndices ());
     pcl::ExtractIndices<pcl::PointXYZ> eifilter (false);
@@ -69,26 +78,29 @@ const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::Poin
     std::cout << "objects detected this loop  " << cluster_indices.size() << std::endl;
     eifilter.setInputCloud(nonClumpedPoints);
 
-
-    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
-    {   
+    //for each cluster
+    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it){
         float x =0;
         float y =0;
         int points =0;
+        //find average location of cluster
         for(int i = 0; i<it->indices.size(); i++){
             x += nonClumpedPoints->points[it->indices[i]].x;
             y += nonClumpedPoints->points[it->indices[i]].y;
             points++;
         }
+
         pcl::PointXYZ new_Object;
         new_Object.x = x/points;
         new_Object.y = y/points;
         float biggestDistance =0.0;
+        //find farthest point from center
         for(int i = 0; i<it->indices.size(); i++){
             float currentDist = computeSquared(nonClumpedPoints->points[it->indices[i]],new_Object);
             if(currentDist>biggestDistance)
                 biggestDistance = currentDist; 
         }
+        //categorize clusters
         if(biggestDistance > small_squared_Distance){
             new_Object.z = 2;
             big_objects.points.push_back(new_Object);
@@ -108,11 +120,4 @@ const sensor_msgs::PointCloud2 clusterDetection::cluster(const sensor_msgs::Poin
     nonClumpedPoints->erase(std::remove_if(nonClumpedPoints->begin(),nonClumpedPoints->end(),clusterDetection::wasRemoved),nonClumpedPoints->end());
 
     std::cout << "points after  " << nonClumpedPoints->size() << std::endl;
-
-    pcl::PointCloud<pcl::PointXYZ> pclROSObjectLists = big_objects + small_objects; //temp clouds
-
-
-    sensor_msgs::PointCloud2 rosObjectList;
-    toROSMsg(pclROSObjectLists,rosObjectList);
-    return rosObjectList;
 }

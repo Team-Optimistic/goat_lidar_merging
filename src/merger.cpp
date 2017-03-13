@@ -30,7 +30,10 @@ int main(int argc, char** argv){
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("/scan", 10, scanCallback);
   ros::Publisher cloud_pub = node.advertise<sensor_msgs::PointCloud2>("cloud", 10);
-  ros::Publisher object_pub = node.advertise<sensor_msgs::PointCloud2>("objects", 10);
+  ros::Publisher small_objects_pub = node.advertise<sensor_msgs::PointCloud2>("small_objects", 10);
+  ros::Publisher big_objects_pub = node.advertise<sensor_msgs::PointCloud2>("big_objects", 10);
+
+
 
   tf::TransformListener listener_;
   laser_geometry::LaserProjection projector_;
@@ -57,9 +60,18 @@ int main(int argc, char** argv){
       sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
       cloud2.header.frame_id = "/field";
       cloud_pub.publish(cloud2);
-      objectsCloud = detector.cluster(cloud2);
+
+
+      detector.cluster(cloud2);
+
+      objectsCloud = detector.get_small_objects();
       objectsCloud.header = cloud2.header;
-      object_pub.publish(objectsCloud);
+      small_objects_pub.publish(objectsCloud);
+
+      objectsCloud = detector.get_big_objects();
+      objectsCloud.header = cloud2.header;
+      big_objects_pub.publish(objectsCloud);
+
     } catch(const tf2::ExtrapolationException& e){
       ROS_INFO("Need to see the past");
     } catch(const tf2::ConnectivityException& e){
@@ -69,6 +81,7 @@ int main(int argc, char** argv){
   }
   ros:: spinOnce();
   rate.sleep();
+
 
 
 }
