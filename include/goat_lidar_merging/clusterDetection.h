@@ -24,8 +24,8 @@ public:
   static bool wasRemoved(const pcl::PointXYZ &point);
   void removeUnwantedPoints(pcl::PointCloud<pcl::PointXYZ> &cloud);
 
-  void sensor_msgs::PointCloud2 get_small_objects() const;
-  void sensor_msgs::PointCloud2 get_big_objects() const;
+  sensor_msgs::PointCloud2 get_small_objects() const;
+  sensor_msgs::PointCloud2 get_big_objects() const;
 
   static pcl::PointCloud<pcl::PointXYZ> big_objects, small_objects; //temp clouds
   static double small_squared_Distance, big_squared_Distance;

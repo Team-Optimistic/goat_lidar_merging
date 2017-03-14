@@ -1,5 +1,8 @@
 #include "goat_lidar_merging/clusterDetection.h"
 
+double clusterDetection::big_squared_Distance, clusterDetection::small_squared_Distance; 
+pcl::PointCloud<pcl::PointXYZ> clusterDetection::big_objects, clusterDetection::small_objects; 
+
 clusterDetection::clusterDetection(unsigned int minPoints,unsigned int radiusMM, unsigned int starSize, unsigned int cubeSize):
 	nonClumpedPoints(new pcl::PointCloud<pcl::PointXYZ>)
 {
@@ -16,7 +19,7 @@ constexpr float computeSquared(const pcl::PointXYZ& p1, const pcl::PointXYZ& p2)
 	return (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y-p1.y);
 }
 
-const bool clusterDetection::wasRemoved(const pcl::PointXYZ &point)
+bool clusterDetection::wasRemoved(const pcl::PointXYZ &point)
 {
 	return point.z > 5.0;
 }
@@ -51,14 +54,14 @@ void clusterDetection::removeUnwantedPoints(pcl::PointCloud<pcl::PointXYZ> &clou
 	cloud.erase(std::remove_if(cloud.begin(),cloud.end(),clusterDetection::isUnwanted),cloud.end());
 }
 
-void sensor_msgs::PointCloud2 clusterDetection::get_big_objects() void
+sensor_msgs::PointCloud2 clusterDetection::get_big_objects() const
 {
 	sensor_msgs::PointCloud2 rosObjectList;
 	toROSMsg(big_objects,rosObjectList);
 	return rosObjectList;
 }
 
-void sensor_msgs::PointCloud2 clusterDetection::get_small_objects() void
+sensor_msgs::PointCloud2 clusterDetection::get_small_objects() const
 {
 	sensor_msgs::PointCloud2 rosObjectList;
 	toROSMsg(small_objects,rosObjectList);
