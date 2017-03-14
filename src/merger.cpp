@@ -26,7 +26,7 @@ int main(int argc, char** argv)
   ros::Subscriber sub = node.subscribe("lidar/scan", 10, scanCallback);
   ros::Publisher cloud_pub = node.advertise<sensor_msgs::PointCloud2>("goat/cloud", 10);
   ros::Publisher small_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/small_objects", 10);
-  ros::Publisher big_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goalt/big_objects", 10);
+  ros::Publisher big_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/big_objects", 10);
 
   tf::TransformListener listener_;
   laser_geometry::LaserProjection projector_;
