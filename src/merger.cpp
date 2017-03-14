@@ -30,8 +30,8 @@ int main(int argc, char** argv){
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("/scan", 10, scanCallback);
   ros::Publisher cloud_pub = node.advertise<sensor_msgs::PointCloud2>("cloud", 10);
-  ros::Publisher small_objects_pub = node.advertise<sensor_msgs::PointCloud2>("small_objects", 10);
-  ros::Publisher big_objects_pub = node.advertise<sensor_msgs::PointCloud2>("big_objects", 10);
+  ros::Publisher small_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/small_objects", 10);
+  ros::Publisher big_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goalt/big_objects", 10);
 
 
 
