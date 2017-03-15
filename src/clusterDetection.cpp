@@ -9,7 +9,7 @@ clusterDetection::clusterDetection(unsigned int minPoints,unsigned int radiusMM,
 	tree.reset(new pcl::search::KdTree<pcl::PointXYZ>);
 
 	small_squared_Distance = (starSize * starSize) * 1e-6;
-	big_squared_Distance = 1.5 * (cubeSize * cubeSize) * 1e-6;
+	big_squared_Distance =  (cubeSize * cubeSize) * 1e-6;
 	extractor.setClusterTolerance (radiusMM * 1e-3);
 	extractor.setMinClusterSize (minPoints);
 }

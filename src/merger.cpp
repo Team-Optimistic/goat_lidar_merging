@@ -20,7 +20,7 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan)
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "merger");
-  clusterDetection detector(10,50,165,200);
+  clusterDetection detector(10,75,165,280);
 
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("lidar/scan", 10, scanCallback);
