@@ -56,7 +56,8 @@ int main(int argc, char** argv)
         cloud2.header.frame_id = "/field";
         cloud_pub.publish(cloud2);
         detector.add_Cloud(cloud2);
-        seen_messages++;   
+        seen_messages++;
+        ROS_INFO("seen messages %d",seen_messages);
       }
       catch (const tf2::ExtrapolationException& e)
       {
@@ -67,7 +68,7 @@ int main(int argc, char** argv)
         ROS_INFO("No recent connection between base_link and odom");
       }
     }
-    if(seen_messages>100){
+    if(seen_messages>5){
       detector.cluster();
       objectsCloud = detector.get_small_objects();
       objectsCloud.header = cloud2.header;
