@@ -20,7 +20,7 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan)
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "merger");
-  clusterDetection detector(10,75,100,280);
+  clusterDetection detector(15,50,125,280);
 
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("lidar/scan", 10, scanCallback);
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
         ROS_INFO("No recent connection between base_link and odom");
       }
     }
-    if(seen_messages>5){
+    if(seen_messages>=4){
       detector.cluster();
       objectsCloud = detector.get_small_objects();
       objectsCloud.header = cloud2.header;
