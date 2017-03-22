@@ -78,7 +78,7 @@ void clusterDetection::add_Cloud(const sensor_msgs::PointCloud2 &cloud2)
 void clusterDetection::cluster(){
 
 	std::vector<pcl::PointIndices> cluster_indices;
-	pcl::PointIndices::Ptr points_in_clusters(new pcl::PointIndices());
+	//pcl::PointIndices::Ptr points_in_clusters(new pcl::PointIndices());
 	big_objects.points.clear();
 	small_objects.points.clear();
 	tree->setInputCloud(nonClumpedPoints);
@@ -127,6 +127,6 @@ void clusterDetection::cluster(){
 			small_objects.points.push_back(new_Object);
 		}
 
-		points_in_clusters->indices.insert(points_in_clusters->indices.begin(), it->indices.begin(), it->indices.end());
+		//points_in_clusters->indices.insert(points_in_clusters->indices.begin(), it->indices.begin(), it->indices.end());
 	}
 }
