@@ -57,6 +57,8 @@ int main(int argc, char** argv)
           const int end_index = start_index + points_per_cloud > scan_in.ranges.size() ? scan_in.ranges.size():start_index + points_per_cloud;          
           sensor_msgs::LaserScan temp;
           temp.header = scan_in.header;
+          temp.header.stamp = scan_in.header.stamp +
+          ros::Duration().fromSec(points_per_cloud*scan_in.time_increment);
 
           temp.time_increment = scan_in.time_increment;
           temp.range_min = scan_in.range_min;
