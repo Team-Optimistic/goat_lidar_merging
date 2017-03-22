@@ -73,7 +73,7 @@ void clusterDetection::add_Cloud(const sensor_msgs::PointCloud2 &cloud2)
 	
 	pcl::PointCloud<pcl::PointXYZ> newScan; //temp clouds
 	fromROSMsg(cloud2,newScan);
-	removeUnwantedPoints
+	removeUnwantedPoints(newScan);
 	(*nonClumpedPoints) += newScan; //new scan now only contains points that add new knowledge
 }
 void clusterDetection::cluster(){
