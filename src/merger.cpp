@@ -31,7 +31,7 @@ int main(int argc, char** argv)
   tf::TransformListener listener_;
   laser_geometry::LaserProjection projector_;
 
-  ros::Rate rate(100.0);
+  ros::Rate rate(500.0);
 
   while (node.ok())
   {
