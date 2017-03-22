@@ -30,9 +30,12 @@ int main(int argc, char** argv)
 
   tf::TransformListener listener_;
   laser_geometry::LaserProjection projector_;
+  sensor_msgs::PointCloud cloud;
+  sensor_msgs::PointCloud2 cloud2;
+  sensor_msgs::PointCloud2 objectsCloud;
 
   ros::Rate rate(500.0);
-
+  int seen_messages = 0;
   while (node.ok())
   {
     if(Message)
@@ -41,31 +44,19 @@ int main(int argc, char** argv)
       try
       {
         if (!listener_.waitForTransform(scan_in.header.frame_id,"/field", scan_in.header.stamp +
-            ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0)))
+          ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0)))
         {
           ROS_INFO("Gave up");
           continue;
         }
-
-        sensor_msgs::PointCloud cloud;
-        sensor_msgs::PointCloud2 cloud2;
-        sensor_msgs::PointCloud2 objectsCloud;
+        
 
         projector_.transformLaserScanToPointCloud("/field",scan_in, cloud,listener_);
         sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
         cloud2.header.frame_id = "/field";
         cloud_pub.publish(cloud2);
-
-        detector.cluster(cloud2);
-
-        objectsCloud = detector.get_small_objects();
-        objectsCloud.header = cloud2.header;
-        small_objects_pub.publish(objectsCloud);
-
-        objectsCloud = detector.get_big_objects();
-        objectsCloud.header = cloud2.header;
-        big_objects_pub.publish(objectsCloud);
-
+        detector.add_Cloud(cloud2);
+        seen_messages++;   
       }
       catch (const tf2::ExtrapolationException& e)
       {
@@ -76,7 +67,17 @@ int main(int argc, char** argv)
         ROS_INFO("No recent connection between base_link and odom");
       }
     }
+    if(seen_messages>100){
+      detector.cluster();
+      objectsCloud = detector.get_small_objects();
+      objectsCloud.header = cloud2.header;
+      small_objects_pub.publish(objectsCloud);
 
+      objectsCloud = detector.get_big_objects();
+      objectsCloud.header = cloud2.header;
+      big_objects_pub.publish(objectsCloud);
+      seen_messages = 0;
+    }
     ros::spinOnce();
     rate.sleep();
   }

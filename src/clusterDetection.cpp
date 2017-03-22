@@ -4,7 +4,7 @@ double clusterDetection::big_squared_Distance, clusterDetection::small_squared_D
 pcl::PointCloud<pcl::PointXYZ> clusterDetection::big_objects, clusterDetection::small_objects; 
 
 clusterDetection::clusterDetection(unsigned int minPoints,unsigned int radiusMM, unsigned int starSize, unsigned int cubeSize):
-	nonClumpedPoints(new pcl::PointCloud<pcl::PointXYZ>)
+nonClumpedPoints(new pcl::PointCloud<pcl::PointXYZ>)
 {
 	tree.reset(new pcl::search::KdTree<pcl::PointXYZ>);
 
@@ -41,9 +41,9 @@ bool clusterDetection::isUnwanted(const pcl::PointXYZ &point)
 	}
 
 	if(point.x < 0 + field_margin || point.y < 0 + field_margin)
-	    return true;
+		return true;
 	if(point.x > field_length - field_margin || point.y >  field_length/2 - field_margin)
-	    return true;
+		return true;
 
 	return false;
 }
@@ -68,76 +68,65 @@ sensor_msgs::PointCloud2 clusterDetection::get_small_objects() const
 	return rosObjectList;
 }
 
-void clusterDetection::cluster(const sensor_msgs::PointCloud2 &cloud2)
+void clusterDetection::add_Cloud(const sensor_msgs::PointCloud2 &cloud2)
 {
-	std::vector<pcl::PointIndices> cluster_indices;
-	pcl::PointIndices::Ptr points_in_clusters(new pcl::PointIndices());
-	pcl::ExtractIndices<pcl::PointXYZ> eifilter(false);
-
+	
 	pcl::PointCloud<pcl::PointXYZ> newScan; //temp clouds
 	fromROSMsg(cloud2,newScan);
-	int oldPoints = newScan.size();
-	clusterDetection::removeUnwantedPoints(newScan);
 	(*nonClumpedPoints) += newScan; //new scan now only contains points that add new knowledge
+}
+void clusterDetection::cluster(){
 
+	std::vector<pcl::PointIndices> cluster_indices;
+	//pcl::PointIndices::Ptr points_in_clusters(new pcl::PointIndices());
+	big_objects.points.clear();
+	small_objects.points.clear();
 	tree->setInputCloud(nonClumpedPoints);
-	std::cout << "objects pre loop  " << cluster_indices.size() << std::endl;
 
 	extractor.setSearchMethod(tree);
 	extractor.setInputCloud(nonClumpedPoints);
 	extractor.extract(cluster_indices);
-	std::cout << "objects detected this loop  " << cluster_indices.size() << std::endl;
-	eifilter.setInputCloud(nonClumpedPoints);
+	//eifilter.setInputCloud(nonClumpedPoints);
 
 //for each cluster
-for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
-{
-	float x = 0;
-	float y = 0;
-	int points = 0;
-	//find average location of cluster
-	for(int i = 0; i < it->indices.size(); i++)
+	for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
 	{
-		x += nonClumpedPoints->points[it->indices[i]].x;
-		y += nonClumpedPoints->points[it->indices[i]].y;
-		points++;
-	}
+		float x = 0;
+		float y = 0;
+		int points = 0;
+	//find average location of cluster
+		for(int i = 0; i < it->indices.size(); i++)
+		{
+			x += nonClumpedPoints->points[it->indices[i]].x;
+			y += nonClumpedPoints->points[it->indices[i]].y;
+			points++;
+		}
 
-	pcl::PointXYZ new_Object;
-	new_Object.x = x / points;
-	new_Object.y = y / points;
-	float biggestDistance = 0.0;
+		pcl::PointXYZ new_Object;
+		new_Object.x = x / points;
+		new_Object.y = y / points;
+		float biggestDistance = 0.0;
 
 	//find farthest point from center
-	for(int i = 0; i < it->indices.size(); i++)
-	{
-		float currentDist = computeSquared(nonClumpedPoints->points[it->indices[i]],new_Object);
-		if(currentDist > biggestDistance)
-		biggestDistance = currentDist;
-	}
+		for(int i = 0; i < it->indices.size(); i++)
+		{
+			float currentDist = computeSquared(nonClumpedPoints->points[it->indices[i]],new_Object);
+			if(currentDist > biggestDistance)
+				biggestDistance = currentDist;
+		}
 
 	//categorize clusters
-	if(biggestDistance > small_squared_Distance)
-	{
-		new_Object.z = 2;
-		big_objects.points.push_back(new_Object);
+		if(biggestDistance > small_squared_Distance)
+		{
+			new_Object.z = 2;
+			big_objects.points.push_back(new_Object);
+		}
+		else
+		{
+			new_Object.z = 1;
+			small_objects.points.push_back(new_Object);
+		}
+
+		//points_in_clusters->indices.insert(points_in_clusters->indices.begin(), it->indices.begin(), it->indices.end());
 	}
-	else
-	{
-		new_Object.z = 1;
-		small_objects.points.push_back(new_Object);
-	}
-
-	points_in_clusters->indices.insert(points_in_clusters->indices.begin(), it->indices.begin(), it->indices.end());
-}
-
-eifilter.setIndices(points_in_clusters);
-eifilter.setNegative(true);
-eifilter.setUserFilterValue(1337.0);
-eifilter.filterDirectly(nonClumpedPoints);
-//std::cout << "initial Points  " << nonClumpedPoints->size() << std::endl;
-
-nonClumpedPoints->erase(std::remove_if(nonClumpedPoints->begin(), nonClumpedPoints->end(), clusterDetection::wasRemoved), nonClumpedPoints->end());
-
-std::cout << "points after  " << nonClumpedPoints->size() << std::endl;
 }
