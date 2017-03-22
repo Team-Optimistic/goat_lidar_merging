@@ -67,6 +67,13 @@ sensor_msgs::PointCloud2 clusterDetection::get_small_objects() const
 	toROSMsg(small_objects,rosObjectList);
 	return rosObjectList;
 }
+sensor_msgs::PointCloud2 clusterDetection::get_cloud() const
+{
+	sensor_msgs::PointCloud2 rosObjectList;
+	toROSMsg(*nonClumpedPoints,rosObjectList);
+	return rosObjectList;
+}
+
 
 void clusterDetection::add_Cloud(const sensor_msgs::PointCloud2 &cloud2)
 {
