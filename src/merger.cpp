@@ -49,15 +49,37 @@ int main(int argc, char** argv)
           ROS_INFO("Gave up");
           continue;
         }
+        const int seperate_clouds = 10;
+        const int points_per_cloud = scan_in.ranges.size()/seperate_clouds;
+        int points_this_scan=0;
+        for(int i = 0; i < seperate_clouds; i++){
+          const int start_index = i * points_per_cloud;
+          const int end_index = start_index + points_per_cloud > scan_in.ranges.size() ? scan_in.ranges.size():start_index + points_per_cloud;          
+          sensor_msgs::LaserScan temp;
+          temp.header = scan_in.header;
+
+          temp.time_increment = scan_in.time_increment;
+          temp.range_min = scan_in.range_min;
+          temp.range_max = scan_in.range_max;
+          temp.angle_min = scan_in.angle_min + start_index * (M_PI/180.0);
+          temp.angle_max = scan_in.angle_min + end_index * (M_PI/180.0);
+          temp.angle_increment = scan_in.angle_increment;
+          temp.ranges.assign(scan_in.ranges.begin()+start_index,
+            scan_in.ranges.begin()+end_index);
+          temp.intensities.assign(scan_in.intensities.begin()+start_index,
+            scan_in.intensities.begin()+end_index);
+          points_this_scan+=temp.ranges.size();
+
+          projector_.transformLaserScanToPointCloud("/field",temp, cloud,listener_);
+          sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
+          cloud2.header.frame_id = "/field";
+          detector.add_Cloud(cloud2);
+        }
         
 
-        projector_.transformLaserScanToPointCloud("/field",scan_in, cloud,listener_);
-        sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
-        cloud2.header.frame_id = "/field";
-        cloud_pub.publish(cloud2);
-        detector.add_Cloud(cloud2);
         seen_messages++;
-        ROS_INFO("seen messages %d",seen_messages);
+        ROS_INFO("seen Points %d",points_this_scan);
+        points_this_scan=0;//debuggin variable
       }
       catch (const tf2::ExtrapolationException& e)
       {
@@ -70,6 +92,7 @@ int main(int argc, char** argv)
     }
     if(seen_messages>5){
       detector.cluster();
+
       objectsCloud = detector.get_small_objects();
       objectsCloud.header = cloud2.header;
       small_objects_pub.publish(objectsCloud);
@@ -77,6 +100,11 @@ int main(int argc, char** argv)
       objectsCloud = detector.get_big_objects();
       objectsCloud.header = cloud2.header;
       big_objects_pub.publish(objectsCloud);
+
+      cloud2 = detector.get_cloud();
+      cloud2.header = objectsCloud.header;
+      cloud_pub.publish(cloud2);
+
       seen_messages = 0;
     }
     ros::spinOnce();
