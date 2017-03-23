@@ -1,7 +1,7 @@
 #include "goat_lidar_merging/clusterDetection.h"
 
-double clusterDetection::big_squared_Distance, clusterDetection::small_squared_Distance; 
-pcl::PointCloud<pcl::PointXYZ> clusterDetection::big_objects, clusterDetection::small_objects; 
+double clusterDetection::big_squared_Distance, clusterDetection::small_squared_Distance;
+pcl::PointCloud<pcl::PointXYZ> clusterDetection::big_objects, clusterDetection::small_objects;
 
 clusterDetection::clusterDetection(unsigned int minPoints,unsigned int radiusMM, unsigned int starSize, unsigned int cubeSize):
 nonClumpedPoints(new pcl::PointCloud<pcl::PointXYZ>)
@@ -78,7 +78,7 @@ sensor_msgs::PointCloud2 clusterDetection::get_cloud() const
 
 void clusterDetection::add_Cloud(const sensor_msgs::PointCloud2 &cloud2)
 {
-	
+
 	pcl::PointCloud<pcl::PointXYZ> newScan; //temp clouds
 	fromROSMsg(cloud2,newScan);
 	removeUnwantedPoints(newScan);
@@ -100,8 +100,7 @@ void clusterDetection::cluster(){
 //for each cluster
 	for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
 	{
-		float x = 0;
-		float y = 0;
+		float x = 0, y = 0;
 		int points = 0;
 	//find average location of cluster
 		for(int i = 0; i < it->indices.size(); i++)

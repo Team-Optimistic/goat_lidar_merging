@@ -7,26 +7,26 @@
 
 #include "goat_lidar_merging/clusterDetection.h"
 
-bool Message = false;
+bool message = false;
 sensor_msgs::LaserScan scan_in;
 
 void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan)
 {
   scan_in = *scan;
   scan_in.range_min = 0.42;
-  Message = true;
+  message = true;
 }
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "merger");
-  clusterDetection detector(15,50,125,280);
+  clusterDetection detector(15, 50, 125, 280);
 
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("lidar/scan", 10, scanCallback);
-  ros::Publisher cloud_pub = node.advertise<sensor_msgs::PointCloud2>("goat/cloud", 100);
-  ros::Publisher small_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/small_objects", 10);
-  ros::Publisher big_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/big_objects", 10);
+  ros::Publisher cloud_pub = node.advertise<sensor_msgs::PointCloud2>("goat/cloud", 100),
+                             small_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/small_objects", 10),
+                             big_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/big_objects", 10);
 
   tf::TransformListener listener_;
   laser_geometry::LaserProjection projector_;
@@ -38,28 +38,32 @@ int main(int argc, char** argv)
   int seen_messages = 0;
   while (node.ok())
   {
-    if(Message)
+    if(message)
     {
-      Message = false;
+      message = false;
       try
       {
         if (!listener_.waitForTransform(scan_in.header.frame_id,"/field", scan_in.header.stamp +
-          ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0)))
+            ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0)))
         {
           ROS_INFO("Gave up");
           continue;
         }
-        const int seperate_clouds = 10;
+
+        constexpr int seperate_clouds = 10;
         const int points_per_cloud = scan_in.ranges.size()/seperate_clouds;
         int points_this_scan=0;
-             ROS_INFO("Scan Time %1.2f",(1000.0* scan_in.ranges.size())*scan_in.time_increment);
-             ROS_INFO("time increment  %1.6f",scan_in.time_increment);
-                
-        for(int i = 0; i < seperate_clouds; i++){
+        ROS_INFO("Scan Time %1.2f",(1000.0* scan_in.ranges.size())*scan_in.time_increment);
+        ROS_INFO("time increment  %1.6f",scan_in.time_increment);
+
+        for (int i = 0; i < seperate_clouds; i++)
+        {
           const int start_index = i * points_per_cloud;
-          const int end_index = start_index + points_per_cloud > scan_in.ranges.size() ? scan_in.ranges.size():start_index + points_per_cloud;          
+          const int end_index = start_index + points_per_cloud > scan_in.ranges.size() ? scan_in.ranges.size():start_index + points_per_cloud;
           sensor_msgs::LaserScan temp;
           temp.header = scan_in.header;
+          temp.header.stamp = scan_in.header.stamp +
+          ros::Duration().fromSec(points_per_cloud*scan_in.time_increment);
 
           temp.time_increment = scan_in.time_increment;
           temp.range_min = scan_in.range_min;
@@ -68,17 +72,16 @@ int main(int argc, char** argv)
           temp.angle_max = scan_in.angle_min + end_index * (M_PI/180.0);
           temp.angle_increment = scan_in.angle_increment;
           temp.ranges.assign(scan_in.ranges.begin()+start_index,
-            scan_in.ranges.begin()+end_index);
-          temp.intensities.assign(scan_in.intensities.begin()+start_index,
-            scan_in.intensities.begin()+end_index);
-          points_this_scan+=temp.ranges.size();
+          scan_in.ranges.begin() + end_index);
+          temp.intensities.assign(scan_in.intensities.begin() + start_index,
+          scan_in.intensities.begin() + end_index);
+          points_this_scan += temp.ranges.size();
 
           projector_.transformLaserScanToPointCloud("/field",temp, cloud,listener_);
           sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
           cloud2.header.frame_id = "/field";
           detector.add_Cloud(cloud2);
         }
-        
 
         seen_messages++;
        // ROS_INFO("seen Points %d",points_this_scan);
@@ -93,7 +96,9 @@ int main(int argc, char** argv)
         ROS_INFO("No recent connection between base_link and odom");
       }
     }
-    if(seen_messages>=4){
+
+    if (seen_messages >= 4)
+    {
       detector.cluster();
 
       objectsCloud = detector.get_small_objects();
@@ -110,6 +115,7 @@ int main(int argc, char** argv)
 
       seen_messages = 0;
     }
+
     ros::spinOnce();
     rate.sleep();
   }
