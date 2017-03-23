@@ -69,6 +69,7 @@ sensor_msgs::PointCloud2 clusterDetection::get_small_objects() const
 }
 sensor_msgs::PointCloud2 clusterDetection::get_cloud() const
 {
+	ROS_INFO("total points  %d", nonClumpedPoints->size());
 	sensor_msgs::PointCloud2 rosObjectList;
 	toROSMsg(*nonClumpedPoints,rosObjectList);
 	return rosObjectList;
@@ -122,7 +123,7 @@ void clusterDetection::cluster(){
 			if(currentDist > biggestDistance)
 				biggestDistance = currentDist;
 		}
-
+		ROS_INFO("cluster contains  %d  ",it->indices.size());
 	//categorize clusters
 		if(biggestDistance > small_squared_Distance)
 		{

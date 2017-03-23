@@ -52,6 +52,9 @@ int main(int argc, char** argv)
         const int seperate_clouds = 10;
         const int points_per_cloud = scan_in.ranges.size()/seperate_clouds;
         int points_this_scan=0;
+             ROS_INFO("Scan Time %1.2f",(1000.0* scan_in.ranges.size())*scan_in.time_increment);
+             ROS_INFO("time increment  %1.6f",scan_in.time_increment);
+                
         for(int i = 0; i < seperate_clouds; i++){
           const int start_index = i * points_per_cloud;
           const int end_index = start_index + points_per_cloud > scan_in.ranges.size() ? scan_in.ranges.size():start_index + points_per_cloud;          
@@ -78,7 +81,7 @@ int main(int argc, char** argv)
         
 
         seen_messages++;
-        ROS_INFO("seen Points %d",points_this_scan);
+       // ROS_INFO("seen Points %d",points_this_scan);
         points_this_scan=0;//debuggin variable
       }
       catch (const tf2::ExtrapolationException& e)
