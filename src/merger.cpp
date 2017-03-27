@@ -66,7 +66,7 @@ int main(int argc, char** argv)
           continue;
         }
 
-        constexpr int seperate_clouds = 10;
+        constexpr int seperate_clouds = 120;
         const int points_per_cloud = scan_in.ranges.size()/seperate_clouds;
         int points_this_scan=0;
         ROS_INFO("Scan Time %1.2f",(1000.0* scan_in.ranges.size())*scan_in.time_increment);
@@ -75,7 +75,12 @@ int main(int argc, char** argv)
         for (int i = 0; i < seperate_clouds; i++)
         {
           const int start_index = i * points_per_cloud;
-          const int end_index = start_index + points_per_cloud > scan_in.ranges.size() ? scan_in.ranges.size():start_index + points_per_cloud;
+          int end_index;
+          if (start_index + points_per_cloud > scan_in.ranges.size())
+          	end_index = scan_in.ranges.size();
+          else
+          	end_index = start_index + points_per_cloud;
+
           sensor_msgs::LaserScan temp;
           temp.header = scan_in.header;
           temp.header.stamp = scan_in.header.stamp +
@@ -93,8 +98,8 @@ int main(int argc, char** argv)
             scan_in.intensities.begin() + end_index);
           points_this_scan += temp.ranges.size();
 
-          projector_.transformLaserScanToPointCloud("/field",temp, cloud,listener_);
-          sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
+          projector_.transformLaserScanToPointCloud("/field", temp, cloud, listener_);
+          sensor_msgs::convertPointCloudToPointCloud2(cloud, cloud2);
           cloud2.header.frame_id = "/field";
           detector.add_Cloud(cloud2);
         }

@@ -26,8 +26,8 @@ bool clusterDetection::wasRemoved(const pcl::PointXYZ &point)
 
 bool clusterDetection::isUnwanted(const pcl::PointXYZ &point)
 {
-	constexpr float field_margin = 0.1, field_length = 3.6576;
-
+	constexpr float field_margin = 0.25, field_length = 3.6576;
+  /*
 	for (unsigned i=0; i <big_objects.size();i++)
 	{
 		if(computeSquared(point, big_objects.at(i)) < big_squared_Distance)
@@ -39,7 +39,7 @@ bool clusterDetection::isUnwanted(const pcl::PointXYZ &point)
 		if(computeSquared(point, small_objects.at(i)) < small_squared_Distance)
 			return true;
 	}
-
+*/
 	if(point.x < 0 + field_margin || point.y < 0 + field_margin)
 		return true;
 	if(point.x > field_length - field_margin || point.y >  field_length/2 - field_margin)
