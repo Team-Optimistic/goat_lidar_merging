@@ -9,42 +9,58 @@
 
 bool message = false;
 sensor_msgs::LaserScan scan_in;
-
+int clusterMaxDistance = 50;
+sensor_msgs::PointCloud robot;
 void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan)
 {
   scan_in = *scan;
   scan_in.range_min = 0.42;
   message = true;
 }
+void makeRobotCloud(){
+  robot.header.frame_id = "/base_link";
+  geometry_msgs::Point32 point;
+  int chassisLength = 12 * 25.4;
+  point.z = 0.0001;
+  int pointsForChassisLength = chassisLength / (clusterMaxDistance/2);
+  for(int i = -1* pointsForChassisLength; i<=pointsForChassisLength; i++){ //rows 
+    for(int j = -1* pointsForChassisLength; j<=pointsForChassisLength; j++){ //rows
+      point.x = i * 1.0 * (chassisLength / pointsForChassisLength) / 1000;
+      point.y = j * 1.0 * (chassisLength / pointsForChassisLength) / 1000;
+      robot.points.push_back(point);
+    }
+  }
+}
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "merger");
-  clusterDetection detector(15, 50, 125, 280);
+  clusterDetection detector(15, clusterMaxDistance, 125, 280);
 
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("lidar/scan", 10, scanCallback);
-  ros::Publisher cloud_pub = node.advertise<sensor_msgs::PointCloud2>("goat/cloud", 100),
-                             small_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/small_objects", 10),
-                             big_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/big_objects", 10);
+  ros::Publisher cloud_pub = node.advertise<sensor_msgs::PointCloud2>("goat/cloudz", 100),
+  small_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/small_objects", 10),
+  big_objects_pub = node.advertise<sensor_msgs::PointCloud2>("goat/big_objects", 10);
 
   tf::TransformListener listener_;
   laser_geometry::LaserProjection projector_;
   sensor_msgs::PointCloud cloud;
   sensor_msgs::PointCloud2 cloud2;
   sensor_msgs::PointCloud2 objectsCloud;
-
+  makeRobotCloud();
   ros::Rate rate(500.0);
-  int seen_messages = 0;
+  int seen_messages = 6;
   while (node.ok())
   {
-    if(message)
+    try
     {
-      message = false;
-      try
+      if(message)
       {
+        message = false;
+
         if (!listener_.waitForTransform(scan_in.header.frame_id,"/field", scan_in.header.stamp +
-            ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0)))
+          ros::Duration().fromSec(scan_in.ranges.size()*scan_in.time_increment),ros::Duration(1.0)))
         {
           ROS_INFO("Gave up");
           continue;
@@ -72,9 +88,9 @@ int main(int argc, char** argv)
           temp.angle_max = scan_in.angle_min + end_index * (M_PI/180.0);
           temp.angle_increment = scan_in.angle_increment;
           temp.ranges.assign(scan_in.ranges.begin()+start_index,
-          scan_in.ranges.begin() + end_index);
+            scan_in.ranges.begin() + end_index);
           temp.intensities.assign(scan_in.intensities.begin() + start_index,
-          scan_in.intensities.begin() + end_index);
+            scan_in.intensities.begin() + end_index);
           points_this_scan += temp.ranges.size();
 
           projector_.transformLaserScanToPointCloud("/field",temp, cloud,listener_);
@@ -86,36 +102,44 @@ int main(int argc, char** argv)
         seen_messages++;
        // ROS_INFO("seen Points %d",points_this_scan);
         points_this_scan=0;//debuggin variable
+
       }
-      catch (const tf2::ExtrapolationException& e)
+
+      if (seen_messages >= 4)
       {
-        ROS_INFO("Need to see the past");
-      }
-      catch (const tf2::ConnectivityException& e)
-      {
-        ROS_INFO("No recent connection between base_link and odom");
+
+        listener_.transformPointCloud("/field",ros::Time(0),robot,"/base_link",cloud);
+        sensor_msgs::convertPointCloudToPointCloud2(cloud,cloud2);
+        detector.add_Cloud(cloud2);
+
+        detector.cluster();
+
+        objectsCloud = detector.get_small_objects();
+        objectsCloud.header = cloud2.header;
+        small_objects_pub.publish(objectsCloud);
+
+        objectsCloud = detector.get_big_objects();
+        objectsCloud.header = cloud2.header;
+        big_objects_pub.publish(objectsCloud);
+
+        //cloud2 = detector.get_cloud();
+        //cloud2.header = objectsCloud.header;
+        cloud_pub.publish(cloud2);
+
+        seen_messages = 0;
       }
     }
-
-    if (seen_messages >= 4)
+    catch (const tf2::ExtrapolationException& e)
     {
-      detector.cluster();
-
-      objectsCloud = detector.get_small_objects();
-      objectsCloud.header = cloud2.header;
-      small_objects_pub.publish(objectsCloud);
-
-      objectsCloud = detector.get_big_objects();
-      objectsCloud.header = cloud2.header;
-      big_objects_pub.publish(objectsCloud);
-
-      cloud2 = detector.get_cloud();
-      cloud2.header = objectsCloud.header;
-      cloud_pub.publish(cloud2);
-
-      seen_messages = 0;
+      ROS_INFO("Need to see the past");
     }
-
+    catch (const tf2::ConnectivityException& e)
+    {
+      ROS_INFO("No recent connection between base_link and odom");
+    }
+    catch (const tf2::LookupException& e){
+      ROS_INFO("Don't see required frames. Start static transforms.");
+    }
     ros::spinOnce();
     rate.sleep();
   }

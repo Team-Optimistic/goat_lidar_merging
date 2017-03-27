@@ -69,7 +69,7 @@ sensor_msgs::PointCloud2 clusterDetection::get_small_objects() const
 }
 sensor_msgs::PointCloud2 clusterDetection::get_cloud() const
 {
-	ROS_INFO("total points  %d", nonClumpedPoints->size());
+	//ROS_INFO("total points  %d", nonClumpedPoints->size());
 	sensor_msgs::PointCloud2 rosObjectList;
 	toROSMsg(*nonClumpedPoints,rosObjectList);
 	return rosObjectList;
@@ -87,7 +87,9 @@ void clusterDetection::add_Cloud(const sensor_msgs::PointCloud2 &cloud2)
 void clusterDetection::cluster(){
 
 	std::vector<pcl::PointIndices> cluster_indices;
-	//pcl::PointIndices::Ptr points_in_clusters(new pcl::PointIndices());
+	pcl::ExtractIndices<pcl::PointXYZ> eifilter(false);
+
+	pcl::PointIndices::Ptr robot_cluster(new pcl::PointIndices());
 	big_objects.points.clear();
 	small_objects.points.clear();
 	tree->setInputCloud(nonClumpedPoints);
@@ -95,16 +97,18 @@ void clusterDetection::cluster(){
 	extractor.setSearchMethod(tree);
 	extractor.setInputCloud(nonClumpedPoints);
 	extractor.extract(cluster_indices);
-	//eifilter.setInputCloud(nonClumpedPoints);
+	eifilter.setInputCloud(nonClumpedPoints);
 
-//for each cluster
+	//for each cluster
 	for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
 	{
 		float x = 0, y = 0;
 		int points = 0;
-	//find average location of cluster
+		//find average location of cluster
 		for(int i = 0; i < it->indices.size(); i++)
 		{
+			if(nonClumpedPoints->points[it->indices[i]].z > 0.00005)
+				robot_cluster->indices = it->indices;
 			x += nonClumpedPoints->points[it->indices[i]].x;
 			y += nonClumpedPoints->points[it->indices[i]].y;
 			points++;
@@ -114,16 +118,15 @@ void clusterDetection::cluster(){
 		new_Object.x = x / points;
 		new_Object.y = y / points;
 		float biggestDistance = 0.0;
-
-	//find farthest point from center
+		//find farthest point from center
 		for(int i = 0; i < it->indices.size(); i++)
 		{
 			float currentDist = computeSquared(nonClumpedPoints->points[it->indices[i]],new_Object);
 			if(currentDist > biggestDistance)
 				biggestDistance = currentDist;
 		}
-		ROS_INFO("cluster contains  %d  ",it->indices.size());
-	//categorize clusters
+		//ROS_INFO("cluster contains  %d  ",it->indices.size());
+		//categorize clusters
 		if(biggestDistance > small_squared_Distance)
 		{
 			new_Object.z = 2;
@@ -137,4 +140,10 @@ void clusterDetection::cluster(){
 
 		//points_in_clusters->indices.insert(points_in_clusters->indices.begin(), it->indices.begin(), it->indices.end());
 	}
+	eifilter.setIndices(robot_cluster);
+	eifilter.setNegative(true);
+	eifilter.setUserFilterValue(1337.0);
+	eifilter.filterDirectly(nonClumpedPoints);
+	nonClumpedPoints->erase(std::remove_if(nonClumpedPoints->begin(), nonClumpedPoints->end(), clusterDetection::wasRemoved), nonClumpedPoints->end());
+
 }
