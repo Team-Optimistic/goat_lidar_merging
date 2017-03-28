@@ -44,8 +44,8 @@ void makeRobotCloud()
   {
     for (int j = pointsForHalfChassisLength; j <= ceil(cos(i) * clawRadius) + pointsForHalfChassisLength; j++)
     {
-      point.y = float(i * (chassisLength / pointsForChassisLength)) / 1000;
-      point.x = float(j * (chassisLength / pointsForChassisLength)) / 1000;
+      point.y = float(i * (chassisLength / pointsForHalfChassisLength)) / 1000;
+      point.x = float(j * (chassisLength / pointsForHalfChassisLength)) / 1000;
       robot.points.push_back(point);
     }
   }
