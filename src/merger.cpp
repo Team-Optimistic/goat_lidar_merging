@@ -32,8 +32,8 @@ void makeRobotCloud(){
   {
     for (int j = -1 * pointsForHalfChassisLength; j <= pointsForHalfChassisLength; j++)
     {
-      point.x = float(i * (chassisLength / pointsForChassisLength)) / 1000;
-      point.y = float(j * (chassisLength / pointsForChassisLength)) / 1000;
+      point.x = float(i * (chassisLength / pointsForHalfChassisLength)) / 1000;
+      point.y = float(j * (chassisLength / pointsForHalfChassisLength)) / 1000;
       robot.points.push_back(point);
     }
   }
@@ -43,8 +43,8 @@ void makeRobotCloud(){
   {
     for (int j = pointsForHalfChassisLength; j <= (ceil(cos(i)) * clawRadius) + pointsForHalfChassisLength; j++)
     {
-      point.x = float(i * (chassisLength / pointsForChassisLength)) / 1000;
-      point.y = float(j * (chassisLength / pointsForChassisLength)) / 1000;
+      point.x = float(i * (chassisLength / pointsForHalfChassisLength)) / 1000;
+      point.y = float(j * (chassisLength / pointsForHalfChassisLength)) / 1000;
       robot.points.push_back(point);
     }
   }
