@@ -24,9 +24,8 @@ void makeRobotCloud(){
   geometry_msgs::Point32 point;
   point.z = 0.0001;
 
-  constexpr int chassisLength = int(12 * 25.4);
-  constexpr int clawRadius = int(22.5 * 25.4);
-  consexpr int pointsForHalfChassisLength = chassisLength / (clusterMaxDistance / 2);
+  constexpr int chassisLength = int(12 * 25.4), clawRadius = int(22.5 * 25.4);
+  constexpr int pointsForHalfChassisLength = chassisLength / (clusterMaxDistance / 2);
 
   //Draw square
   for (int i = -1 * pointsForHalfChassisLength; i <= pointsForHalfChassisLength; i++)
@@ -146,7 +145,7 @@ int main(int argc, char** argv)
         objectsCloud.header = cloud2.header;
         big_objects_pub.publish(objectsCloud);
 
-        cloud2 = detector.get_cloud();
+        //cloud2 = detector.get_cloud();
         cloud2.header = objectsCloud.header;
         cloud_pub.publish(cloud2);
 
