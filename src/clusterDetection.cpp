@@ -98,7 +98,7 @@ void clusterDetection::cluster(){
 	extractor.setInputCloud(nonClumpedPoints);
 	extractor.extract(cluster_indices);
 	eifilter.setInputCloud(nonClumpedPoints);
-
+	bool robot = false
 	//for each cluster
 	for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
 	{
@@ -107,13 +107,19 @@ void clusterDetection::cluster(){
 		//find average location of cluster
 		for(int i = 0; i < it->indices.size(); i++)
 		{
-			if(nonClumpedPoints->points[it->indices[i]].z > 0.00005)
+			if(nonClumpedPoints->points[it->indices[i]].z > 0.00005){
 				robot_cluster->indices = it->indices;
+				robot = true;
+				break;
+			}
 			x += nonClumpedPoints->points[it->indices[i]].x;
 			y += nonClumpedPoints->points[it->indices[i]].y;
 			points++;
 		}
-
+		if(robot){
+			robot = false;
+			continue;
+		}
 		pcl::PointXYZ new_Object;
 		new_Object.x = x / points;
 		new_Object.y = y / points;
