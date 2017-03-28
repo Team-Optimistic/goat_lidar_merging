@@ -98,7 +98,7 @@ void clusterDetection::cluster(){
 	extractor.setInputCloud(nonClumpedPoints);
 	extractor.extract(cluster_indices);
 	eifilter.setInputCloud(nonClumpedPoints);
-	bool robot = false
+	bool robot = false;
 	//for each cluster
 	for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
 	{

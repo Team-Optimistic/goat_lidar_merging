@@ -127,8 +127,8 @@ int main(int argc, char** argv)
         objectsCloud.header = cloud2.header;
         big_objects_pub.publish(objectsCloud);
 
-        //cloud2 = detector.get_cloud();
-        //cloud2.header = objectsCloud.header;
+        cloud2 = detector.get_cloud();
+        cloud2.header = objectsCloud.header;
         cloud_pub.publish(cloud2);
 
         seen_messages = 0;
