@@ -19,7 +19,8 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan)
   scan_in.range_min = 0.42;
   message = true;
 }
-void makeRobotCloud(){
+void makeRobotCloud()
+{
   robot.header.frame_id = "/base_link";
   geometry_msgs::Point32 point;
   point.z = 0.0001;
@@ -41,10 +42,10 @@ void makeRobotCloud(){
   //Draw semicircle
   for (int i = -1 * pointsForHalfChassisLength; i <= pointsForHalfChassisLength; i++)
   {
-    for (int j = pointsForHalfChassisLength; j <= (ceil(cos(i)) * clawRadius) + pointsForHalfChassisLength; j++)
+    for (int j = pointsForHalfChassisLength; j <= ceil(cos(i) * clawRadius) + pointsForHalfChassisLength; j++)
     {
-      point.x = float(i * (chassisLength / pointsForChassisLength)) / 1000;
-      point.y = float(j * (chassisLength / pointsForChassisLength)) / 1000;
+      point.y = float(i * (chassisLength / pointsForChassisLength)) / 1000;
+      point.x = float(j * (chassisLength / pointsForChassisLength)) / 1000;
       robot.points.push_back(point);
     }
   }
