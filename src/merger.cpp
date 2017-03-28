@@ -4,13 +4,15 @@
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_listener.h>
 #include <laser_geometry/laser_geometry.h>
+#include <cmath>
 
 #include "goat_lidar_merging/clusterDetection.h"
 
+constexpr int clusterMaxDistance = 50;
 bool message = false;
 sensor_msgs::LaserScan scan_in;
-int clusterMaxDistance = 50;
 sensor_msgs::PointCloud robot;
+
 void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan)
 {
   scan_in = *scan;
@@ -20,13 +22,30 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan)
 void makeRobotCloud(){
   robot.header.frame_id = "/base_link";
   geometry_msgs::Point32 point;
-  int chassisLength = 12 * 25.4;
   point.z = 0.0001;
-  int pointsForChassisLength = chassisLength / (clusterMaxDistance/2);
-  for(int i = -1* pointsForChassisLength; i<=pointsForChassisLength; i++){ //rows 
-    for(int j = -1* pointsForChassisLength; j<=pointsForChassisLength; j++){ //rows
-      point.x = i * 1.0 * (chassisLength / pointsForChassisLength) / 1000;
-      point.y = j * 1.0 * (chassisLength / pointsForChassisLength) / 1000;
+
+  constexpr int chassisLength = int(12 * 25.4);
+  constexpr int clawRadius = int(22.5 * 25.4);
+  consexpr int pointsForHalfChassisLength = chassisLength / (clusterMaxDistance / 2);
+
+  //Draw square
+  for (int i = -1 * pointsForHalfChassisLength; i <= pointsForHalfChassisLength; i++)
+  {
+    for (int j = -1 * pointsForHalfChassisLength; j <= pointsForHalfChassisLength; j++)
+    {
+      point.x = float(i * (chassisLength / pointsForChassisLength)) / 1000;
+      point.y = float(j * (chassisLength / pointsForChassisLength)) / 1000;
+      robot.points.push_back(point);
+    }
+  }
+
+  //Draw semicircle
+  for (int i = -1 * pointsForHalfChassisLength; i <= pointsForHalfChassisLength; i++)
+  {
+    for (int j = pointsForHalfChassisLength; j <= (ceil(cos(i)) * clawRadius) + pointsForHalfChassisLength; j++)
+    {
+      point.x = float(i * (chassisLength / pointsForChassisLength)) / 1000;
+      point.y = float(j * (chassisLength / pointsForChassisLength)) / 1000;
       robot.points.push_back(point);
     }
   }
