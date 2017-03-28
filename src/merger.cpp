@@ -25,7 +25,7 @@ void makeRobotCloud()
   geometry_msgs::Point32 point;
   point.z = 0.0001;
 
-  constexpr int chassisLength = int(12 * 25.4), clawRadius = int(22.5 * 25.4);
+  constexpr int chassisLength = int(12 * 25.4), clawRadius = int((22.5 * 25.4) / 25);
   constexpr int pointsForHalfChassisLength = chassisLength / (clusterMaxDistance / 2);
 
   //Draw square
@@ -40,12 +40,12 @@ void makeRobotCloud()
   }
 
   //Draw semicircle
-  for (int i = -1 * pointsForHalfChassisLength; i <= pointsForHalfChassisLength; i++)
+  for (int i = -1 * (pointsForHalfChassisLength * 1.5); i <= pointsForHalfChassisLength * 1.5; i++)
   {
-    for (int j = pointsForHalfChassisLength; j <= ceil(cos(i) * clawRadius) + pointsForHalfChassisLength; j++)
+    for (int j = 0; j <= int(cos(float(i)/(4.45*3.5)) * clawRadius); j++)
     {
       point.y = float(i * (chassisLength / pointsForHalfChassisLength)) / 1000;
-      point.x = float(j * (chassisLength / pointsForHalfChassisLength)) / 1000;
+      point.x = -1 * float(j * (chassisLength / pointsForHalfChassisLength)) / 1000 - (0.012192 + (12*25.4)/1000.0);
       robot.points.push_back(point);
     }
   }
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
         objectsCloud.header = cloud2.header;
         big_objects_pub.publish(objectsCloud);
 
-        //cloud2 = detector.get_cloud();
+        cloud2 = detector.get_cloud();
         cloud2.header = objectsCloud.header;
         cloud_pub.publish(cloud2);
 
