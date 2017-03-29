@@ -8,7 +8,8 @@
 
 #include "goat_lidar_merging/clusterDetection.h"
 
-constexpr int clusterMaxDistance = 50;
+constexpr int clusterMaxDistance = 75;
+constexpr int clusterRecord = 50;
 bool message = false;
 sensor_msgs::LaserScan scan_in;
 sensor_msgs::PointCloud robot;
@@ -19,6 +20,7 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan)
   scan_in.range_min = 0.42;
   message = true;
 }
+
 void makeRobotCloud()
 {
   robot.header.frame_id = "/base_link";
@@ -27,6 +29,7 @@ void makeRobotCloud()
 
   constexpr int chassisLength = int(12 * 25.4), clawRadius = int((22.5 * 25.4) / 25);
   constexpr int pointsForHalfChassisLength = chassisLength / (clusterMaxDistance / 2);
+  constexpr int pointsFHCL = chassisLength / (clusterRecord / 2);
 
   //Draw square
   for (int i = -1 * pointsForHalfChassisLength; i <= pointsForHalfChassisLength; i++)
@@ -40,12 +43,12 @@ void makeRobotCloud()
   }
 
   //Draw semicircle
-  for (int i = -1 * (pointsForHalfChassisLength * 1.5); i <= pointsForHalfChassisLength * 1.5; i++)
+  for (int i = -1 * (pointsFHCL * 1.5); i <= pointsFHCL * 1.5; i++)
   {
     for (int j = 0; j <= int(cos(float(i)/(4.45*3.5)) * clawRadius); j++)
     {
-      point.y = float(i * (chassisLength / pointsForHalfChassisLength)) / 1000;
-      point.x = -1 * float(j * (chassisLength / pointsForHalfChassisLength)) / 1000 - (0.012192 + (12*25.4)/1000.0);
+      point.y = float(i * (chassisLength / pointsFHCL)) / 1000;
+      point.x = float(j * (chassisLength / pointsFHCL)) / 1000 + (0.012192 + (12*25.4)/1000.0);
       robot.points.push_back(point);
     }
   }
@@ -54,7 +57,7 @@ void makeRobotCloud()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "merger");
-  clusterDetection detector(15, clusterMaxDistance, 125, 280);
+  clusterDetection detector(15, clusterMaxDistance, 100, 280);
 
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("lidar/scan", 10, scanCallback);
