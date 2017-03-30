@@ -8,7 +8,7 @@
 
 #include "goat_lidar_merging/clusterDetection.h"
 
-constexpr int clusterMaxDistance = 75;
+constexpr int clusterMaxDistance = 100;
 constexpr int clusterRecord = 50;
 bool message = false;
 sensor_msgs::LaserScan scan_in;
