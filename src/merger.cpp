@@ -57,7 +57,7 @@ void makeRobotCloud()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "merger");
-  clusterDetection detector(15, clusterMaxDistance, 100, 280);
+  clusterDetection detector(15, clusterMaxDistance, 150, 280);
 
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("lidar/scan", 10, scanCallback);
