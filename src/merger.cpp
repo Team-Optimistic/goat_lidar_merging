@@ -71,8 +71,9 @@ int main(int argc, char** argv)
   sensor_msgs::PointCloud2 cloud2;
   sensor_msgs::PointCloud2 objectsCloud;
   makeRobotCloud();
-  ros::Rate rate(500.0);
+  ros::Rate rate(50.0);
   int seen_messages = 6;
+  listener_.waitForTransform("/neato_laser","/field",ros::Time(0),ros::Duration(5.0));
   while (node.ok())
   {
     try
@@ -91,8 +92,8 @@ int main(int argc, char** argv)
         constexpr int seperate_clouds = 120;
         const int points_per_cloud = scan_in.ranges.size()/seperate_clouds;
         int points_this_scan=0;
-        ROS_INFO("Scan Time %1.2f",(1000.0* scan_in.ranges.size())*scan_in.time_increment);
-        ROS_INFO("time increment  %1.6f",scan_in.time_increment);
+        //ROS_INFO("Scan Time %1.2f",(1000.0* scan_in.ranges.size())*scan_in.time_increment);
+        //ROS_INFO("time increment  %1.6f",scan_in.time_increment);
 
         for (int i = 0; i < seperate_clouds; i++)
         {
