@@ -27,7 +27,7 @@ void makeRobotCloud()
   geometry_msgs::Point32 point;
   point.z = 0.0001;
 
-  constexpr int chassisLength = int(12 * 25.4), clawRadius = int((18 * 25.4) / 25);
+  constexpr int chassisLength = int(11 * 25.4), clawRadius = int((9 * 25.4) / 25);
   constexpr int pointsForHalfChassisLength = chassisLength / (clusterMaxDistance / 2);
   constexpr int pointsFHCL = chassisLength / (clusterRecord / 2);
 
@@ -57,7 +57,7 @@ void makeRobotCloud()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "merger");
-  clusterDetection detector(15, clusterMaxDistance, 150, 280);
+  clusterDetection detector(15, clusterMaxDistance, 130, 280);
 
   ros::NodeHandle node;
   ros::Subscriber sub = node.subscribe("lidar/scan", 10, scanCallback);
